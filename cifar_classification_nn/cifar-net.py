@@ -1,8 +1,14 @@
 import os
 import torch
+from datetime import datetime
+
 from torch import Tensor, nn, optim
 from torch.autograd import Variable
 from torch.nn import functional as F
+
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
 from torchvision import datasets
 
@@ -120,10 +126,17 @@ def create_classifier():
     nn.Linear(1024, 10),
     nn.Softmax()]
 
+# Xavier Initialization
+def init_weights(m):
+    if type(m) == nn.Linear:
+        torch.nn.init.xavier_uniform_(m.weight)
+
 def create_model():
     m = create_conv_blocks()
     m.extend(create_classifier())
     model = nn.Sequential(*m)
+    # apply xavier initialization for FC
+    model.apply(init_weights)
     return model
 
 def train_model(model, train_input, train_target, batch_size, epochs):
@@ -131,11 +144,15 @@ def train_model(model, train_input, train_target, batch_size, epochs):
     eta = 1e-2
     optimizer = optim.SGD(model.parameters(), lr=eta)
 
+    # plot loss over time (epochs)
+    x_loss = []
+    y_epochs = []
+
 
     for e in range(epochs):
         sum_loss = 0
         nb_errors = 0
-        
+
         for b in range(0, train_input.size(0), batch_size):
             input = train_input.narrow(0, b, batch_size)
             target = train_target.narrow(0, b, batch_size)
@@ -151,7 +168,7 @@ def train_model(model, train_input, train_target, batch_size, epochs):
             
             loss = loss_fn(output, target)
             
-            # sum_loss += loss.data
+            sum_loss += loss.data
 
             model.zero_grad()
             loss.backward()
@@ -159,12 +176,19 @@ def train_model(model, train_input, train_target, batch_size, epochs):
             optimizer.step()
 
             # print statistics
-            sum_loss += loss.data
-            if b % 2000 == 0:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' % (e + 1, b + 1, sum_loss / 2000))
-                sum_loss = 0.0
+            # sum_loss += loss.data
+            # if b % 2000 == 0:    # print every 2000 mini-batches
+            #     print('[%d, %5d] loss: %.3f' % (e + 1, b + 1, sum_loss / 2000))
+            #     sum_loss = 0.0
+        x_loss.append(e)
+        y_epochs.append(sum_loss)
         
         print('[%5d] accuracy: %.3f' % (e + 1, (1-(nb_errors/train_input.size(0)))*100))
+    plt.plot(x_loss, y_epochs)
+    plt.xlabel('epochs')
+    plt.ylabel('loss')
+    plt.savefig('loss.png')
+
 
 
 def compute_nb_errors(model, input, target, batch_size):
@@ -180,21 +204,29 @@ def compute_nb_errors(model, input, target, batch_size):
                 nb_errors += 1
     return nb_errors
 
-# Hyper parameters
+# Hyperparameters
 batch_size = 100
 
 # iteration counts
-epochs = 100 
+"""
+For eta = 1e-3 -> epochs = 150-200?
+For eta = 1e-2 -> epochs = 75 (w/o xavier)
+For eta = 1e-2 -> epochs = 50 (w/ xavier)
+"""
+epochs = 50
 
 model = create_model()
 if torch.cuda.is_available():
     model = model.cuda()
 
-
+# Train model
+start_time = datetime.now()
 train_model(model, train_input, train_target, batch_size, epochs)
+print('Training time: ', datetime.now() - start_time)
 # save model
 torch.save(model.state_dict(), 'net_2.pt')
 
+# Calculate test errors
 nb_errors = compute_nb_errors(model, test_input, test_target, batch_size)
 
 print ('error: {:.02f}% {:d} / {:d}'.format(100*nb_errors / test_input.size(0), nb_errors, test_input.size(0)))

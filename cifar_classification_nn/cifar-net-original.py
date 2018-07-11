@@ -210,7 +210,59 @@ print ('error: {:.02f}% {:d} / {:d}'.format(100*nb_errors / test_input.size(0), 
 # batch_size=100
 # epochs=100
 # eta=1e-2
-# time
+# time ~ 30mins
 # initial error = .021 ??? initialization??
 # train_acc = 84.992%
 # test_error= 36.69%
+
+
+############# net_3.pt
+# -> xavier_initialization for FC -> Faster training (28 epochs to reach 98% train_acc)
+# -> NO SOFTMAX LAYER -> Important for high accuracy
+# batch_size = 100
+# epochs = 75 (50 is good enough)
+# eta = 1e-2
+# time: 20mins
+# train_acc = 99.128%
+# test_error = 28.74%
+
+
+############# net_4.pt
+# xavier_initialization
+# No softmax
+# -> BatchNorm: faster training, prevent overfitting(test_error does go down)
+#               high initial accuracy
+#               fewer epochs
+# def create_classifier():
+#     return [Flatten(),
+#     nn.BatchNorm1d(1024),
+#     nn.Linear(1024, 1024),
+#     nn.ReLU(inplace=True),
+#     nn.BatchNorm1d(1024),
+#     nn.Linear(1024, 10)]
+#    nn.Softmax()]
+# batch_size = 100
+# epochs = 50
+# eta = 1e-2
+# time: ~15min
+# train_acc = 100%
+# test_error = 27.32%
+
+
+############# net_5.pt
+# xavier_initialization
+# No softmax
+# Dropout instead of BatchNorm
+# def create_classifier():
+#     return [Flatten(),
+#     nn.Dropout(p=0.5),
+#     nn.Linear(1024, 1024),
+#     nn.ReLU(inplace=True),
+#     nn.Dropout(p=0.5),
+#     nn.Linear(1024, 10)]
+# batch_size = 100
+# epochs = 100
+# eta = 1e-2
+# time: ~
+# train_acc = %
+# test_error = %
