@@ -6,15 +6,15 @@
     * PyTorch 0.4
 
 ## Overview
-Parameters|net.pt|net_2.pt|net_3.pt|net_4.pt|net_5.pt
----|---|---|---|---|---
-batch_size|50|100|100|100|100
-epochs|250|100|75(50)|50|50
-eta|1e-3|1e-2|1e-2|1e-2|1e-2
-training_time|~45 mins|~30 mins|20 mins|15 mins|N/A
-initial_error| > .032|.021|N/A|N/A|N/A
-train_acc|84%|84.992%|99.128%|100%|84.32%
-test_error|44%|36.69%|28.74%|27.32%|34.14%
+Parameters|net.pt|net_2.pt|net_3.pt|net_4.pt|net_5.pt|net_6.pt
+---|---|---|---|---|---|---
+batch_size|50|100|100|100|100|100
+epochs|250|100|75(50)|50|150|250
+eta|1e-3|1e-2|1e-2|1e-2|1e-2|1e-2
+training_time|0:44|0:30|0:20|0:15|0:40|1:40
+initial_error| > .032|.021|N/A|N/A|20.314|N/A
+train_acc|84%|84.992%|99.128%|100%|88.228%|91.150%
+test_error|44%|36.69%|28.74%|27.32%|27.40%|26.72%
 
 ## Additional Information
 * net_1
@@ -69,6 +69,7 @@ test_error|44%|36.69%|28.74%|27.32%|34.14%
     ```
 * net_5
     * Swap batch norm for drop out: Accuracy and test error increases.
+    * Xavier
     ```python 
     def create_classifier():
         return [Flatten(),
@@ -78,3 +79,8 @@ test_error|44%|36.69%|28.74%|27.32%|34.14%
         nn.Dropout(p=0.5),
         nn.Linear(1024, 10)]
     ```
+
+* net_6
+    * Drop out
+    * Xavier
+    * increase epochs to 250
